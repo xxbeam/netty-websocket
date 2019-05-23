@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>websocket-test</title>
+</head>
+    <body>
+
+        <div>
+            <button type="button" onclick="WebSocketTest()">运行 WebSocket</button>
+            <button type="button" onclick="getuuid()">获取uuid</button>
+            <button type="button" onclick="send()">发送消息</button>
+            <button type="button" onclick="close()">关闭websocket</button>
+        </div>
+        <input type="text" id="message" placeholder="消息内容">
+        <input type="text" id="uuid" placeholder="发送消息的uuid号">
+        <div id="panel">
+
+        </div>
+        <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+        <script type="text/javascript">
+            var ws;
+            function appendtext(text){
+                var div = "<div>"+text+"</div>"
+                $("#panel").append(div)
+            }
+            function WebSocketTest()
+            {
+                if ("WebSocket" in window)
+                {
+                    // 打开一个 web socket
+                    ws = new WebSocket("ws://localhost:18080/");
+                    ws.onopen = function()
+                    {
+                        appendtext("websocket已连接")
+                    };
+                    ws.onmessage = function (evt)
+                    {
+                        var received_msg = evt.data;
+                        appendtext("接收数据："+received_msg);
+                    };
+                    ws.onclose = function()
+                    {
+                        appendtext("关闭websocket")
+                    };
+                }
+                else
+                {
+                    // 浏览器不支持 WebSocket
+                    appendtext("您的浏览器不支持 WebSocket!");
+                }
+            }
+            function getuuid(){
+                var messageId = new Date().getMilliseconds()
+                var message = "{'messageId':'"+messageId+"','type':0}"
+                ws.send(message);
+            }
+            function send(){
+                var data = $("#message").val();
+                var uuid = $("#uuid").val();
+                var messageId = new Date().getMilliseconds()
+                var message = "{'messageId':'"+messageId+"','type':1,'message':'"+data+"','uuids':['"+uuid+"']}"
+                ws.send(message)
+            }
+            function close(){
+                ws.close()
+            }
+        </script>
+    </body>
+</html>

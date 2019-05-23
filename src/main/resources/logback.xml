@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="120 seconds">
+
+    <!-- 控制台输出日志 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>debug</level>
+        </filter>
+        <encoder>
+            <pattern>%date %level [%thread] %10logger [%file:%line] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--每天生成一个日志文件，保存30天的日志文件。-->
+    <appender name="InfoFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${user.home}/logs/websocket-info-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d %-5level %logger{20} >>> %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!--每天生成一个日志文件，保存30天的日志文件。-->
+    <appender name="ErrorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${user.home}/logs/websocket-error-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d %-5level %logger{20} >>> %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--根logger控制-->
+    <root level="info">
+        <appender-ref ref="InfoFile"/>
+        <appender-ref ref="ErrorFile"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

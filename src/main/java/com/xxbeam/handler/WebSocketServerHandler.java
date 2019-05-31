@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.net.UnknownHostException;
 
 @Service
 @ChannelHandler.Sharable
@@ -62,7 +61,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         //如果http解码失败，则返回HTTP异常
         //如果消息头中没有Upgrade或者它的值不是websocket，则返回400
         if(!req.decoderResult().isSuccess()||(!"websocket".equals(req.headers().get("Upgrade")))){
-            sendHttpResponse(ctx,req,new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,HttpResponseStatus.BAD_REQUEST));
+            sendHttpResponse(ctx,new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,HttpResponseStatus.BAD_REQUEST));
         }
 
         //创建握手处理类之后，会将websocket相关的编码和解码类动态添加到ChannelPipeline中，服务端就可以自动对websocket消息进行解码，后面的业务handler可以直接对websocket对象进行操作
@@ -74,24 +73,20 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         }else{
             handshaker.handshake(ctx.channel(),req);
         }
-        this.addChannel(ctx.channel(),req);
+        this.addChannel(ctx.channel());
     }
 
     /**
      * 握手后维护通道
-     * 为解决同一时间同一网吧可能存在多个握手上来可能导致线程先后然后导致通道维护错误，将此方法改为同步
+     * 为解决同一时间可能存在多个握手上来可能导致线程先后然后导致通道维护错误，将此方法改为同步
      * @param ch
-     * @param req
-     * @throws UnknownHostException
      */
-    private synchronized void addChannel(Channel ch, FullHttpRequest req) throws UnknownHostException{
+    private synchronized void addChannel(Channel ch){
         //握手后将通道加入组
         WebSocketChannelGroup.channels.add(ch);
-
         //生成唯一id
         String uuid = UuidUtil.getUuid();
         //维护本地uuid和通道ID的对应关系
-
         WebSocketChannelGroup.CHANNEL_UUID_MAP.put(ch.id(), uuid);
         WebSocketChannelGroup.UUID_CHANNEL_MAP.put(uuid,ch.id());
     }
@@ -151,10 +146,9 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     /**
      * 发送http的返回
      * @param ctx
-     * @param req
      * @param res
      */
-    private static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res){
+    private static void sendHttpResponse(ChannelHandlerContext ctx,FullHttpResponse res){
 
         //返回应答给客户端
         if(res.status().code()!=200){
@@ -172,7 +166,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
         cause.printStackTrace();
         logger.error(cause.getMessage());
         ResultDTO resultDTO = ResultUtil.exception(cause.toString());

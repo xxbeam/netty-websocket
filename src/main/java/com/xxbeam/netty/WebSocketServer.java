@@ -49,9 +49,7 @@ public class WebSocketServer {
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast(new HttpServerCodec());
                     pipeline.addLast(new HttpObjectAggregator(1024*1024));
-//		pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH,null, true));
                     pipeline.addLast(new ChunkedWriteHandler());
-//		pipeline.addLast(new WebSocketIndexPageHandler(WEBSOCKET_PATH));
                     pipeline.addLast(webSocketServerHandler);
                 }
             });
